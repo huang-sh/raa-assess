@@ -111,7 +111,7 @@ class SvmClassifier:
         pipe = Pipeline([
             ('classify', self.clf)
         ])
-        grid = GridSearchCV(pipe, cv=5, n_jobs=-1, param_grid=self.param_grid, iid=True)
+        grid = GridSearchCV(pipe, cv=5, n_jobs=-1, param_grid=self.param_grid, iid=True, error_score=0)
         x_train, _, y_train, _ = train_test_split(x_train, y_train, test_size=0.4, random_state=1, shuffle=True)
         clf = grid.fit(x_train, y_train)
         C, gamma = clf.best_params_['classify__C'], clf.best_params_['classify__gamma'],
@@ -131,8 +131,8 @@ class SvmClassifier:
             self.param_grid = [{'kernel': [kernel], 'C': C_range, 'gamma': gamma_range}]
         else:
             print('lost parmameters, will use default parameters ')
-            C_range = np.logspace(-5, 15, 21, base=2)  # 21
-            gamma_range = np.logspace(-15, 3, 19, base=2)  # 19
+            C_range = np.logspace(-3, 6, 10, base=2)  # 21
+            gamma_range = np.logspace(-6, 3, 10, base=2)  # 19
             # self.param_grid = [{'kernel': [kernel], 'C': C_range, 'gamma': gamma_range}]
             self.param_grid = [{'classify__kernel': [kernel], 'classify__C': C_range, 'classify__gamma': gamma_range}]
 
