@@ -83,7 +83,7 @@ class Evaluate:
         acc = (tp + tn) / (tp + tn + fp + fn)
         mcc = (tp * tn -fp * fn) / np.sqrt((tp+fp)*(tp+fn)*(tn*fp)*(tn+fn))
         return acc, sn, sp, ppv, mcc
-        
+
 
 class SvmClassifier:
 
@@ -132,7 +132,7 @@ class SvmClassifier:
         else:
             print('lost parmameters, will use default parameters ')
             C_range = np.logspace(-3, 6, 10, base=2)  # 21
-            gamma_range = np.logspace(-6, 3, 10, base=2)  # 19
+            gamma_range = np.logspace(-6, 3, 5, base=2)  # 19
             # self.param_grid = [{'kernel': [kernel], 'C': C_range, 'gamma': gamma_range}]
             self.param_grid = [{'classify__kernel': [kernel], 'classify__C': C_range, 'classify__gamma': gamma_range}]
 
