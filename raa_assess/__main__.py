@@ -115,14 +115,22 @@ def sub_own(args):
 
 def command_parser():
     parser = argparse.ArgumentParser(description='reduce sequence and classify')
+    
+    parser.add_argument('-f', '--file', nargs='+', help='input file')
     parser.add_argument('-r', '--reduce', action='store_true',
                                     help='reduce sequence based on reduce type')
-    parser.add_argument('-f', '--file', nargs='+', help='input file')
+    parser.add_argument('-t', nargs='+', help='type id')
+    parser.add_argument('-s', nargs='+', help='reduce size')
     parser.add_argument('-k', nargs='+', type=int, choices=[1,2,3])
-    parser.add_argument('-o', '--output', help='output folder name')
     parser.add_argument('-c', '--compute', action='store_true', help='compute')
-    parser.add_argument('-p', '--plot', action='store_true', help='plot')
-
+    parser.add_argument('-cv', type=float, help='cross validation fold')
+    parser.add_argument('-hpo', type=float, help='hyper-parameter optimize,')
+    parser.add_argument('-o', '--output', help='output folder name')
+    parser.add_argument('-v', '--plot', action='store_true', help='plot')
+    parser.add_argument('-fmt', default="png", help='the format of figures')
+    parser.add_argument('-p', type=int, choices=list([i for i in range(1, os.cpu_count())]),
+                                 default=os.cpu_count()/2, help='output folder name')
+    
     subparsers = parser.add_subparsers(help='sub-command help')
 
     parser_v = subparsers.add_parser('view', help='view the reduce amino acids scheme')
