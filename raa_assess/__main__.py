@@ -66,7 +66,7 @@ def sub_plot(args):
         n = os.path.basename(re_file).split("_")[0][0]
         ul.eval_plot(re_dic, int(n), args.o, fmt=args.fmt)
         reuslt_ls.append(re_dic)
-    # ul.temp_plot(reuslt_ls, args.o,fmt=args.fmt)
+    # ul.temp_plot(reuslt_ls, args.o, fmt=args.fmt)
         
 
 def sub_fs(args):
@@ -174,8 +174,7 @@ def command_parser():
 
 if __name__ == '__main__':
     command_parser()
-    # result_dic = cp.al_comparison("isp_2n/type9/12_2n.csv")
-    # draw.p_roc_al(result_dic, "zhy911/roc.png")
+
     
 
 
