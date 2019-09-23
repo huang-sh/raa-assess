@@ -16,7 +16,8 @@ try:
 except ImportError:
     import classify as al
     import utils as ul
-    import compute as cp  
+    import compute as cp 
+    import draw 
 
 
 def model_hpo(x, y):
@@ -112,12 +113,15 @@ def feature_select(feature_file, cpu, cv=-1, hpo=1):
     feature_idx = [i[0] for i in rank_score]
     evla_func = partial(process_eval_func, cv=cv, hpo=hpo)
     results = Parallel(n_jobs=cpu)(
-        delayed(evla_func)((X[:, feature_idx[:i+1]], y)) for i, idx in enumerate(feature_idx))
+        delayed(evla_func)((X[:, feature_idx[:i+1]], y)) for i, idx in enumerate(feature_idx) # if i == 528
+        )
     acc_ls = []
     for i, it in enumerate(results, 1):
         acc = it[0][0]
+        metrics, cm = it
         print(f"{i:<2} ----> {acc[0]}")
         acc_ls.append([acc[0], i])
+        ul.print_report(metrics, cm, 'fs_report2.txt')
     # acc_ls.sort(key=lambda x: x[1])
     return [i[0] for i in acc_ls]
 
@@ -140,11 +144,43 @@ def own_func(file_ls, feature_file, cluster, n):
     metrics, cm = process_eval_func(feature_file, cv=-1, hpo=1)
     return metrics, cm
 
+def cal(files):
+    data_ls = [np.genfromtxt(file, delimiter=',')[:, 1:] for file in files]
+    mix_data = np.hstack(data_ls)
+    x = mix_data
+    y = y = np.genfromtxt(files[0], delimiter=',')[:, 0]
+    X, y = ul.load_normal_data((x, y))
+    selector = VarianceThreshold()
+    new_x = selector.fit_transform(x)
+    score_idx = selector.get_support(indices=True)
+    sb = SelectKBest(k='all')
+    new_data = sb.fit_transform(new_x, y)
+    f_value = sb.scores_
+    idx_score = [(i, v) for i, v in zip(score_idx, f_value)]
+    rank_score = sorted(idx_score, key=lambda x: x[1], reverse=True)
+    feature_idx = [i[0] for i in rank_score]
+    x = X[:, feature_idx[:529]]
+    print(x.shape)
+    metrics, cm = process_eval_func((x, y), cv=-1, hpo=0.6)
+    return metrics, cm
+
 
 if __name__ == '__main__':
-    # m = process_eval_func("isp_2n/type2/16_2n.csv", cv=-1, hpo=1)
-    # for i in m:
-    #     print(i)
-    with open("aa.txt", 'w') as f:
-        for i in range(10):
-            f.write(str(1.123))
+    files = ["isp_1n/type19/17_1n.csv", "isp_2n/type9/12_2n.csv", "isp_3n/type63/14_3n.csv"]
+    data_ls = [np.genfromtxt(file, delimiter=',')[:, 1:] for file in files]
+    mix_data = np.hstack(data_ls)
+    x = mix_data
+    y = np.genfromtxt(files[0], delimiter=',')[:, 0]
+    X, y = ul.load_normal_data((x,y))
+    selector = VarianceThreshold()
+    new_x = selector.fit_transform(X)
+    score_idx = selector.get_support(indices=True)
+    sb = SelectKBest(k='all')
+    new_data = sb.fit_transform(new_x, y)
+    f_value = sb.scores_
+    idx_score = [(i, v) for i, v in zip(score_idx, f_value)]
+    rank_score = sorted(idx_score, key=lambda x: x[1], reverse=True)
+    feature_idx = [i[0] for i in rank_score]
+    x = X[:, feature_idx[:529]]
+    result_dic = al_comparison((x, y))
+    draw.p_roc_al(result_dic, "zhy911/max_fs_roc.png")
