@@ -125,7 +125,7 @@ def command_parser():
     parser_a.add_argument('-s', nargs='+', help='reduce size')
     parser_a.add_argument('-o', help='output folder name')
     parser_a.add_argument('-p', type=int, choices=list([i for i in range(1, os.cpu_count())]),
-                                 default=os.cpu_count()/2, help='output folder name')
+                                 default=int(os.cpu_count()/2), help='output folder name')
     parser_a.set_defaults(func=sub_reduce)
 
     parser_c = subparsers.add_parser('eval', help='evaluate models')
