@@ -77,7 +77,7 @@ def p_comparison_type(diff_size, same_size, types_label, out):
     ax2.text(m_size_idx, max_acc+0.01, f'{max_acc:.3f}',
              ha='center', va='bottom', fontsize=10, fontweight='bold')
     plt.tight_layout()
-    plt.savefig(out, bbox_inches="tight")
+    plt.savefig(out, dpi=600, bbox_inches="tight")
 
 
 def p_acc_heat(data, vmin, vmax, xticklabels, out):
@@ -112,7 +112,9 @@ def p_roc_al(param, out):
     plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
     for clf, metrics in param.items():
-        plt.plot(metrics[0], metrics[1], label=f'{clf} (AUC = {metrics[-1]:.2f})')
+        plt.plot(metrics[0], metrics[1], label=f'{clf} (AUC = {metrics[2]:.3f})')
+        print(clf, metrics[2])
+    plt.legend()
     plt.xlabel('False positive rate')
     plt.ylabel('True positive rate')
     plt.title('ROC curve')
@@ -120,7 +122,7 @@ def p_roc_al(param, out):
 
 def p_fs(score_ls, out):
     plt.figure()
-    plt.plot(range(1, len(score_ls) + 1), score_ls)
+    plt.plot(range(len(score_ls)), score_ls)
     max_acc = max(score_ls)
     best_n = score_ls.index(max_acc) + 1
     plt.scatter(best_n, max_acc, marker='*', c='r')

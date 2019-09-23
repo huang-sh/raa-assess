@@ -58,11 +58,16 @@ def sub_eval(args):
 
 def sub_plot(args):
     ul.mkdirs(args.o)
+    
+    reuslt_ls = []
     for re_file in args.f:
         with open(re_file, 'r') as f:
             re_dic = json.load(f)
         n = os.path.basename(re_file).split("_")[0][0]
         ul.eval_plot(re_dic, int(n), args.o, fmt=args.fmt)
+        reuslt_ls.append(re_dic)
+    # ul.temp_plot(reuslt_ls, args.o,fmt=args.fmt)
+        
 
 def sub_fs(args):
     ul.mkdirs(args.o)
@@ -87,31 +92,6 @@ def sub_own(args):
         report_file = os.path.join(args.o, f"{n}n_report.txt")
         ul.print_report(metric, cm, report_file)
     
-# def workflow(args):
-#     file_dic = {}
-#     fs_file = []
-#     diff_n_acc = []
-#     for n in args.k:
-#         folder = f'{folder}_{n}n'
-#         json_path = os.path.join(args.o, f'{n}n_result.json')
-#         file_dic[n] = json_path
-#         if args.r:
-#             ul.all_type(args.f, folder, n)
-#         if args.te:
-#             cp.all_drill(folder_name)
-#             cp.all_eval(folder_name, json_path, args.cv)
-#         if os.path.exists(json_path):
-#             with open(json_path, 'r') as f:
-#                 result_dic = json.load(f)
-#             f_scores_arr, max_acc_fea_file = plot_n_eval(result_dic, n, args.o, args.o)
-#             fs_file.append(max_acc_fea_file)
-#             diff_n_acc.append(fs_file)
-#     density_path = os.path.join(args.o, f'acc_density_{n}.pdf')
-#     draw.p_univariate_density(diff_n_acc, [f'{i}n' for i in args.k], density_path)
-#     for idx, file in enumerate(fs_file):
-#         acc_ls = cp.feature_select(file)
-#         fig_path = os.path.join(args.o, file.split('.')[0])
-#         draw.p_fs(acc_ls, out=fig_path)
 
 def command_parser():
     parser = argparse.ArgumentParser(description='reduce sequence and classify')
@@ -194,5 +174,8 @@ def command_parser():
 
 if __name__ == '__main__':
     command_parser()
+    # result_dic = cp.al_comparison("isp_2n/type9/12_2n.csv")
+    # draw.p_roc_al(result_dic, "zhy911/roc.png")
+    
 
 

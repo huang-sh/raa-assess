@@ -238,6 +238,21 @@ def eval_plot(result_dic, n, out, fmt='tiff', filter_num = 8):
     # draw.p_roc_al(param, roc_path)
     return f_scores_arr, max_acc_fea_file
 
+def temp_plot(result_dic, out, fmt='png', filter_num = 8):
+    acc_list = []
+    for i in result_dic:
+        key = 'acc'
+        all_score, filter_score = dic2array(i, key=key, filter_num=filter_num)
+        scores, types = all_score
+        f_scores, f_types = filter_score
+        f_scores_arr = f_scores[f_scores > 0]
+        size_arr = np.array([np.arange(2, 21)] * f_scores.shape[0])[f_scores > 0]
+        # path = os.path.join(out, f'acc_size_density-{n}n.{fmt}')
+        size_arr = size_arr.flatten()
+        acc_list.append(f_scores_arr)
+    cp_path = os.path.join(out, f'1-3n.{fmt}')
+    draw.p_univariate_density(acc_list, ["1n", "2n", "3n"], cp_path)
+
 def parse_path(feature_folder, filter_format='csv'):
     """
     :param feature_folder: all type feature folder path

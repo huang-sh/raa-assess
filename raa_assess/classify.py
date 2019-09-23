@@ -22,6 +22,7 @@ class Evaluate:
         self.model = model
         self.x = x
         self.y = y
+        
 
     def loo(self):
         lo = LeaveOneOut()
@@ -29,11 +30,14 @@ class Evaluate:
         X, y = self.x, self.y        
         ss = lo.split(X)
         y_pre_arr = np.zeros(len(y))
+        self.y_pro = []
         for train_idx, test_idx in ss:
             x_train, y_train = X[train_idx], y[train_idx]
             x_test, y_test = X[test_idx], y[test_idx]
             fit_clf = clf.fit(x_train, y_train)
             y_true, y_pre = y_test, fit_clf.predict(x_test)
+            y_pro = clf.predict_proba(x_test)[:, 1].ravel()
+            self.y_pro.append(y_pro)
             y_pre_arr[test_idx] = y_pre
         metric = self.metrics_(y, y_pre_arr)
         cm = multilabel_confusion_matrix(y, y_pre_arr)
@@ -73,6 +77,8 @@ class Evaluate:
         y_true = le.transform(y_true)
         y_pre = le.transform(y_pre)
         mcm = multilabel_confusion_matrix(y_true, y_pre, labels=idx_label)
+        self.y_pre = y_pre
+        self.y_true = y_true
         tn = mcm[:, 0, 0]
         tp = mcm[:, 1, 1]
         fn = mcm[:, 1, 0]
@@ -92,7 +98,7 @@ class SvmClassifier:
         self.cv = cv
         self.param_grid = param_grid if param_grid else {}
         self.is_grid_search = grid_search
-        self.clf = SVC(class_weight='balanced', probability=True,)  # cache_size=500
+        self.clf = SVC(class_weight='balanced', probability=True)  # cache_size=500
         if self.is_grid_search:
             self._check_param_grid(self.param_grid)
         else:
@@ -139,7 +145,7 @@ class SvmClassifier:
 
 class KnnClassifier:
 
-    def __init__(self, cv=5, n_neighbors=6, ):
+    def __init__(self, cv=5, n_neighbors=5):
         self.n_neighbors = n_neighbors
         self.cv = cv
 
@@ -150,7 +156,7 @@ class KnnClassifier:
 
 class RfClassifier:
 
-    def __init__(self, cv=5, n_estimators=30):
+    def __init__(self, cv=5, n_estimators=25):
         self.n_neighbors = n_estimators
         self.cv = cv
 

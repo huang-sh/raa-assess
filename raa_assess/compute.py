@@ -6,6 +6,7 @@ from concurrent import futures
 
 import numpy as np
 from joblib import Parallel, delayed
+from sklearn.metrics import roc_curve, roc_auc_score, accuracy_score
 from sklearn.feature_selection import SelectKBest, VarianceThreshold
 
 try:
@@ -77,18 +78,26 @@ def all_eval(folder_n, result_path, n, cv, hpo, cpu):
     with open(result_path, 'w', encoding='utf-8') as f:
         json.dump(result_dic, f)
 
-# def al_comparison(file_path,):
-#     """
-#     :param file_path: feature file path
-#     :return:
-#     """
-#     classifier = {'SVM': al.SvmClassifier, 'RF': al.RfClassifier, 'KNN': al.KnnClassifier}
-#     result_dic = {}
-#     for clf in classifier:
-#         model = drill(classifier[clf], file_path)
-#         metrics, auc = evaluate(model, file_path)
-#         result_dic[clf] = (*metrics[5:], auc) # sn, sp, presision, acc, mcc, fpr, tpr, auc
-#     return result_dic
+def al_comparison(file_path):
+    """
+    :param file_path: feature file path
+    :return:
+    """
+    classifier = {'SVM': al.SvmClassifier(), 'RF': al.RfClassifier(), 'KNN': al.KnnClassifier()}
+    result_dic = {}
+    for clf in classifier:
+        x, y = ul.load_normal_data(file_path)
+        mo = classifier[clf].train(x, y)
+        evalor = al.Evaluate(mo, x, y)
+        evalor.loo()
+        y_true = evalor.y_true.ravel()
+        y_pro = evalor.y_pro
+        fpr, tpr, _ = roc_curve(y_true, y_pro)
+        auc = roc_auc_score(y_true, y_pro)
+        acc = accuracy_score(y_true, evalor.y_pre)
+        print(acc)
+        result_dic[clf] = (fpr, tpr, auc) # sn, sp, presision, acc, mcc, fpr, tpr, auc
+    return result_dic
 
 def feature_select(feature_file, cpu, cv=-1, hpo=1):
     X, y = ul.load_normal_data(feature_file)
@@ -106,21 +115,36 @@ def feature_select(feature_file, cpu, cv=-1, hpo=1):
         delayed(evla_func)((X[:, feature_idx[:i+1]], y)) for i, idx in enumerate(feature_idx))
     acc_ls = []
     for i, it in enumerate(results, 1):
-        acc, *_ = it[0]
+        acc = it[0][0]
         print(f"{i:<2} ----> {acc[0]}")
         acc_ls.append([acc[0], i])
-    acc_ls.sort(key=lambda x: x[1])
+    # acc_ls.sort(key=lambda x: x[1])
     return [i[0] for i in acc_ls]
 
-def feature_mix(files, cv=-1, hpo=1):
-    data_ls = [np.genfromtxt(file, delimiter=',')[1:] for file in files]
+def feature_mix(files, cpu, cv=-1, hpo=1):
+    data_ls = [np.genfromtxt(file, delimiter=',')[:, 1:] for file in files]
     mix_data = np.hstack(data_ls)
-    x = mix_data[:, 1:]
-    y = mix_data[:, 0]
-    acc_ls = feature_select((x, y), cv=-1, hpo=1)
+    x = mix_data
+    y = np.genfromtxt(files[0], delimiter=',')[:, 0]
+    print(x.shape)
+    print(y.shape)
+    acc_ls = feature_select((x, y), cpu, cv=-1, hpo=1)
+    with open("fs_acc.txt", 'w') as f:
+        for i in acc_ls: 
+            f.write(str(i))
+            f.write("\n")
     return acc_ls
 
 def own_func(file_ls, feature_file, cluster, n):
     ul.one_file(file_ls, feature_file, cluster, n, idx=len(cluster))
     metrics, cm = process_eval_func(feature_file, cv=-1, hpo=1)
     return metrics, cm
+
+
+if __name__ == '__main__':
+    # m = process_eval_func("isp_2n/type2/16_2n.csv", cv=-1, hpo=1)
+    # for i in m:
+    #     print(i)
+    with open("aa.txt", 'w') as f:
+        for i in range(10):
+            f.write(str(1.123))
